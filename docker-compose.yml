@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 85:80
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+          - php
+  php:
+    build:
+          ./php
+    volumes:
+      - ./src:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+    environment:
+       PHP_IDE_CONFIG: "serverName=Docker"
+
+  db_symfony:
+       image: mysql:5.7
+       ports:
+          - 8090:3306
+       environment:
+          - MYSQL_ROOT_PASSWORD=1111
+          - MYSQL_DATABASE=symfony_db
+          - MYSQL_USER=symfony
+          - MYSQL_PASSWORD=1111
+       volumes:
+           - ./database:/var/lib/mysql
+
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      environment:
+          - PMA_ARBITRARY=1
+          - PMA_HOST=db
+          - MYSQL_ROOT_PASSWORD=1111
+      restart: always
+      ports:
+          - 8081:80
+      volumes:
+          - /sessions
+      links:
+           - db_symfony
+
+
